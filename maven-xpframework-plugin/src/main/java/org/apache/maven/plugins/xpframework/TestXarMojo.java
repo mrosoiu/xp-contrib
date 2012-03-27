@@ -8,18 +8,17 @@ package org.apache.maven.plugins.xpframework;
 
 import java.io.File;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.xpframework.AbstractXarMojo;
 
 /**
  * Package test classes and resources into a XAR package
  *
  * @goal test-package
- * @requiresDependencyResolution
+ * @requiresDependencyResolution runtime
  */
 public class TestXarMojo extends AbstractXarMojo {
 
   /**
-   * Set this to 'true' to bypass unit tests entirely
+   * Set this to [true] to bypass unit tests entirely
    * Its use is NOT RECOMMENDED, but quite convenient on occasion
    *
    * @parameter expression="${maven.test.skip}" default-value="false"
@@ -43,10 +42,8 @@ public class TestXarMojo extends AbstractXarMojo {
   protected boolean mergeDependencies;
 
   /**
-   * Assemble test XAR archive
+   * {@inheritDoc}
    *
-   * @return void
-   * @throws org.apache.maven.plugin.MojoExecutionException When xar runner execution failed
    */
   public void execute() throws MojoExecutionException {
     getLog().info(LINE_SEPARATOR);
@@ -60,7 +57,7 @@ public class TestXarMojo extends AbstractXarMojo {
     }
 
     // Assemble test XAR archive
-    File testXarFile= this.getXarFile(this.outputDirectory, this.finalName + "-test", this.classifier);
+    File testXarFile= AbstractXarMojo.getXarFile(this.outputDirectory, this.finalName + "-test", this.classifier);
     this.executeXar(this.testClassesDirectory, testXarFile);
     getLog().info(LINE_SEPARATOR);
 
@@ -71,7 +68,7 @@ public class TestXarMojo extends AbstractXarMojo {
     getLog().info(LINE_SEPARATOR);
 
     // Assemble uber-XAR archive
-    File testUberXarFile= this.getUberXarFile(this.outputDirectory, this.finalName + "-test", this.classifier);
+    File testUberXarFile= AbstractXarMojo.getUberXarFile(this.outputDirectory, this.finalName + "-test", this.classifier);
     this.executeUberXar(testXarFile, testUberXarFile);
 
     getLog().info(LINE_SEPARATOR);

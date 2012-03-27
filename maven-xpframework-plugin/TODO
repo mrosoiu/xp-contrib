@@ -1,2 +1,5 @@
 Maven XP-Framework plugin TODO
 =======================================================================
++ Add support for using different XP-Framework versions
+- Add support for patch libraries (that must be loaded before XP-Framework)
+- Add support for packing web applications

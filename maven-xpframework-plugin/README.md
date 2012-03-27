@@ -9,10 +9,19 @@ of an XP-Framework project:
 * package to XAR
 
 
+Build and install the Java XAR library
+-----------------------------------------------------------------------
+
+You can get the Java XAR library freely from:
+* https://github.com/xp-framework/xp-contrib/tree/master/java-xarlib
+
+    ~/xp-contrib/java-xarlib $ mvn install
+
+
 Build and install the Maven XP-Framework plugin
 -----------------------------------------------------------------------
 
-    ~/maven-xpframework-plugin $ mvn install
+    ~/xp-contrib/maven-xpframework-plugin $ mvn install
 
 
 Install XP-framework
@@ -24,6 +33,10 @@ XP-Framework runners (xp, xcc, unittest, xar) in your PATH.
 
 You can get the XP-Framework freely from:
 * http://xp-framework.net/
+
+As an aternative, if XP-Framework runners are not in PATH, you can
+specify where runners are via `-Dxpframework.bootstrap.runners` and
+`-Dxpframework.bootstrap.classpath`.
 
 
 XP-framework project directory structure
@@ -93,7 +106,7 @@ Example pom.xml file
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-xpframework-plugin</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
             <extensions>true</extensions>
           </plugin>
         </plugins>
@@ -171,7 +184,7 @@ then you can use the "xp" goal):
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-xpframework-plugin</artifactId>
-        <version>1.1</version>
+        <version>1.2</version>
         <extensions>true</extensions>
 
         <executions>

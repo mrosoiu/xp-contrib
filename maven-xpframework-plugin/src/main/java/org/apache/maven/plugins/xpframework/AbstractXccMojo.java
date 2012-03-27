@@ -11,16 +11,15 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.util.Set;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.ArrayList;
 
 import org.apache.maven.model.Resource;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 
-import org.apache.maven.plugins.xpframework.AbstractXpFrameworkMojo;
-import org.apache.maven.plugins.xpframework.runners.RunnerException;
 import org.apache.maven.plugins.xpframework.runners.XccRunner;
+import org.apache.maven.plugins.xpframework.runners.RunnerException;
 import org.apache.maven.plugins.xpframework.runners.input.XccRunnerInput;
 import org.apache.maven.plugins.xpframework.util.FileUtils;
 import org.apache.maven.plugins.xpframework.util.MavenResourceUtils;
@@ -51,7 +50,7 @@ import org.apache.maven.plugins.xpframework.util.MavenResourceUtils;
  *     Use compiler profiles (defaults to ["default"]) - xp/compiler/{profile}.xcp.ini
  *
  *   * -o [outputdir]:
- *     Writed compiled files to outputdir (will be created if not existant)
+ *     Write compiled files to outputdir (will be created if not existent)
  *
  *   * -t [level[,level[...]]]:
  *     Set trace level (all, none, info, warn, error, debug)
@@ -75,10 +74,6 @@ import org.apache.maven.plugins.xpframework.util.MavenResourceUtils;
  *   * [xp   ] XP Language Syntax
  */
 public abstract class AbstractXccMojo extends AbstractXpFrameworkMojo {
-
-  // ----------------------------------------------------------------------
-  // Configurables
-  // ----------------------------------------------------------------------
 
   /**
    * Display verbose diagnostics
@@ -136,9 +131,8 @@ public abstract class AbstractXccMojo extends AbstractXpFrameworkMojo {
   public void executeXcc(List<String> sourceDirectories, File classesDirectory) throws MojoExecutionException {
 
     // Compile each source root
-    Iterator i= sourceDirectories.iterator();
-    while (i.hasNext()) {
-      this.executeXcc((String)i.next(), classesDirectory);
+    for (String srcDir : sourceDirectories) {
+      this.executeXcc(srcDir, classesDirectory);
     }
   }
 
@@ -150,8 +144,8 @@ public abstract class AbstractXccMojo extends AbstractXpFrameworkMojo {
    * @return void
    * @throws org.apache.maven.plugin.MojoExecutionException When execution of the xcc runner failed
    */
+  @SuppressWarnings("unchecked")
   public void executeXcc(String sourceDirectory, File classesDirectory) throws MojoExecutionException {
-    Iterator i;
 
     // Debug info
     getLog().info("Source directory [" + sourceDirectory + "]");
@@ -159,39 +153,24 @@ public abstract class AbstractXccMojo extends AbstractXpFrameworkMojo {
     getLog().debug("Sourcepaths       [" + (null == this.sourcepaths ? "NULL" : this.sourcepaths.toString()) + "]");
     getLog().debug("Classpaths        [" + (null == this.classpaths  ? "NULL" : this.classpaths.toString())  + "]");
 
-    // Prepare xcc input
+    // Prepare [xcc] input
     XccRunnerInput input= new XccRunnerInput();
     input.verbose= this.verbose;
 
     // Add classpaths
     if (null != this.classpaths) {
-      i= this.classpaths.iterator();
-      while (i.hasNext()) {
-        input.addClasspath(new File((String)i.next()));
+      for (String cp : this.classpaths) {
+        input.addClasspath(new File(cp));
       }
     }
 
     // Add xar dependencies to classpath
-    Set projectArtifacts= this.project.getArtifacts();
-    if (projectArtifacts.isEmpty()) {
-      getLog().debug("No dependencies found");
-    } else {
-      getLog().info("Dependencies:");
-      for (i= projectArtifacts.iterator(); i.hasNext(); ) {
-        Artifact projectArtifact= (Artifact) i.next();
-        getLog().info(" * " + projectArtifact.getType() + " [" + projectArtifact.getFile().getAbsolutePath() + "]");
-
-        // Add xar file to classpath
-        if (!projectArtifact.getType().equalsIgnoreCase("xar")) continue;
-        input.addClasspath(projectArtifact.getFile());
-      }
-    }
+    input.addClasspath(this.project.getArtifacts());
 
     // Add sourcepaths
     if (null != this.sourcepaths) {
-      i= this.sourcepaths.iterator();
-      while (i.hasNext()) {
-        input.addSourcepath(new File((String)i.next()));
+      for (String sp : this.sourcepaths) {
+        input.addSourcepath(new File(sp));
       }
     }
 
@@ -200,9 +179,8 @@ public abstract class AbstractXccMojo extends AbstractXpFrameworkMojo {
 
     // Add profiles
     if (null != this.profiles) {
-      i= this.profiles.iterator();
-      while (i.hasNext()) {
-        input.addProfile((String)i.next());
+      for (String profile : this.profiles) {
+        input.addProfile(profile);
       }
     }
 
@@ -212,22 +190,26 @@ public abstract class AbstractXccMojo extends AbstractXpFrameworkMojo {
     // Add source
     input.addSource(new File(sourceDirectory));
 
-    // Prepare runner
-    XccRunner runner= new XccRunner(input);
+    // Configure [xcc] runner
+    File executable= new File(this.bootstrapRunners, "xcc");
+    XccRunner runner= new XccRunner(executable, input);
     runner.setTrace(getLog());
 
     // Set runner working directory
     try {
       runner.setWorkingDirectory(this.basedir);
     } catch (FileNotFoundException ex) {
-      throw new MojoExecutionException("Cannot set xcc runner working directory", ex);
+      throw new MojoExecutionException("Cannot set [xcc] runner working directory", ex);
     }
+
+    // Set [USE_XP] environment variable
+    runner.setEnvironmentVariable("USE_XP", this.bootstrapClasspath);
 
     // Execute runner
     try {
       runner.execute();
     } catch (RunnerException ex) {
-      throw new MojoExecutionException("Execution of xcc runner failed", ex);
+      throw new MojoExecutionException("Execution of [xcc] runner failed", ex);
     }
   }
 

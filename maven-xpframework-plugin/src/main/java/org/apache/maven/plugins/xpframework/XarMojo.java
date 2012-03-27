@@ -8,13 +8,12 @@ package org.apache.maven.plugins.xpframework;
 
 import java.io.File;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.xpframework.AbstractXarMojo;
 
 /**
  * Package classes and resources into a XAR package
  *
  * @goal package
- * @requiresDependencyResolution
+ * @requiresDependencyResolution runtime
  */
 public class XarMojo extends AbstractXarMojo {
 
@@ -35,10 +34,8 @@ public class XarMojo extends AbstractXarMojo {
   protected boolean mergeDependencies;
 
   /**
-   * Compile sources
+   * {@inheritDoc}
    *
-   * @return void
-   * @throws org.apache.maven.plugin.MojoExecutionException When xcc runner execution failed
    */
   public void execute() throws MojoExecutionException {
     getLog().info(LINE_SEPARATOR);
@@ -46,7 +43,7 @@ public class XarMojo extends AbstractXarMojo {
     getLog().info(LINE_SEPARATOR);
 
     // Assemble XAR archive
-    File xarFile= this.getXarFile(this.outputDirectory, this.finalName, this.classifier);
+    File xarFile= AbstractXarMojo.getXarFile(this.outputDirectory, this.finalName, this.classifier);
     this.executeXar(this.classesDirectory, xarFile);
     getLog().info(LINE_SEPARATOR);
 
@@ -57,7 +54,7 @@ public class XarMojo extends AbstractXarMojo {
     getLog().info(LINE_SEPARATOR);
 
     // Assemble uber-XAR archive
-    File uberXarFile= this.getUberXarFile(this.outputDirectory, this.finalName, this.classifier);
+    File uberXarFile= AbstractXarMojo.getUberXarFile(this.outputDirectory, this.finalName, this.classifier);
     this.executeUberXar(xarFile, uberXarFile);
 
     getLog().info(LINE_SEPARATOR);

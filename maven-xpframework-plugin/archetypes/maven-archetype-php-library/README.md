@@ -24,7 +24,7 @@ Execute the following command to create a template that uses WebWork:
       -DartifactId=<my-artifactId>                           \
       -Dversion=1.0.0
 
-<my.groupId>, <my-artifactId> and <version> contains the information
+`<my.groupId>`, `<my-artifactId>` and `<version>` contains the information
 about the new library you want to create.
 
 Compile and install the sample library to local repository

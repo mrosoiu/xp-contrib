@@ -15,7 +15,6 @@ import java.util.Iterator;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 
-import org.apache.maven.plugins.xpframework.AbstractXpFrameworkMojo;
 import org.apache.maven.plugins.xpframework.runners.RunnerException;
 import org.apache.maven.plugins.xpframework.runners.UnittestRunner;
 import org.apache.maven.plugins.xpframework.runners.input.UnittestRunnerInput;
@@ -24,13 +23,9 @@ import org.apache.maven.plugins.xpframework.runners.input.UnittestRunnerInput;
  * Run unittests
  *
  * @goal test
- * @requiresDependencyResolution
+ * @requiresDependencyResolution test
  */
 public class UnittestMojo extends AbstractXpFrameworkMojo {
-
-  // ----------------------------------------------------------------------
-  // Configurables
-  // ----------------------------------------------------------------------
 
   /**
    *
@@ -75,11 +70,11 @@ public class UnittestMojo extends AbstractXpFrameworkMojo {
   protected File iniDirectory;
 
   /**
-   * Additional directories to scan for *.ini files
+   * Additional directories to scan for [*.ini] files
    *
    * @parameter
    */
-  protected ArrayList<String> iniDirectories;
+  protected ArrayList<File> iniDirectories;
 
   /**
    * The directory containing generated classes of the project being tested
@@ -98,17 +93,15 @@ public class UnittestMojo extends AbstractXpFrameworkMojo {
   private File testClassesDirectory;
 
   /**
-   * Assemble test XAR archive
+   * {@inheritDoc}
    *
-   * @return void
-   * @throws org.apache.maven.plugin.MojoExecutionException When unittest runner execution failed
    */
+  @SuppressWarnings("unchecked")
   public void execute() throws MojoExecutionException {
-    Iterator i;
 
     // Run tests
     getLog().info(LINE_SEPARATOR);
-    getLog().info("UNITTEST - RUN");
+    getLog().info("UNITTEST");
     getLog().info(LINE_SEPARATOR);
 
     // Skip tests alltogether?
@@ -125,7 +118,7 @@ public class UnittestMojo extends AbstractXpFrameworkMojo {
     getLog().debug("Classpaths             [" + (null == this.classpaths ? "NULL" : this.classpaths.toString()) + "]");
     getLog().debug("Test arguments         [" + (null == this.testArguments ? "NULL" : this.testArguments.toString()) + "]");
 
-    // Prepare unittest input
+    // Prepare [unittest] input
     UnittestRunnerInput input= new UnittestRunnerInput();
     input.verbose= this.verbose;
 
@@ -134,43 +127,27 @@ public class UnittestMojo extends AbstractXpFrameworkMojo {
     input.addClasspath(classesDirectory);
 
     // Add xar dependencies to classpath
-    Set projectArtifacts= this.project.getArtifacts();
-    if (projectArtifacts.isEmpty()) {
-      getLog().debug("No dependencies found");
-    } else {
-      getLog().info("Dependencies:");
-      for (Iterator it= projectArtifacts.iterator(); it.hasNext(); ) {
-        Artifact projectArtifact= (Artifact) it.next();
-        getLog().info(" * " + projectArtifact.getType() + " [" + projectArtifact.getFile().getAbsolutePath() + "]");
-
-        // Add xar file to classpath
-        if (!projectArtifact.getType().equalsIgnoreCase("xar")) continue;
-        input.addClasspath(projectArtifact.getFile());
-      }
-    }
+    input.addClasspath(this.project.getArtifacts());
 
     // Add pom-defined classpaths
     if (null != this.classpaths) {
-      i= this.classpaths.iterator();
-      while (i.hasNext()) {
-        input.addClasspath(new File((String)i.next()));
+      for (String classpath : this.classpaths) {
+        input.addClasspath(new File(classpath));
       }
     }
 
     // Add arguments
     if (null != this.testArguments) {
-      i= this.testArguments.iterator();
-      while (i.hasNext()) {
-        input.addArgument((String)i.next());
+      for (String testArgument : this.testArguments) {
+        input.addArgument(testArgument);
       }
     }
 
     // Inifiles
     input.addInifileDirectory(this.iniDirectory);
     if (null != this.iniDirectories) {
-      i= this.iniDirectories.iterator();
-      while (i.hasNext()) {
-        input.addInifileDirectory((File)i.next());
+      for (File iniDirectory : this.iniDirectories) {
+        input.addInifileDirectory(iniDirectory);
       }
     }
 
@@ -181,22 +158,26 @@ public class UnittestMojo extends AbstractXpFrameworkMojo {
       return;
     }
 
-    // Prepare runner
-    UnittestRunner runner= new UnittestRunner(input);
+    // Configure [unittest] runner
+    File executable= new File(this.bootstrapRunners, "unittest");
+    UnittestRunner runner= new UnittestRunner(executable, input);
     runner.setTrace(getLog());
 
     // Set runner working directory
     try {
       runner.setWorkingDirectory(this.basedir);
     } catch (FileNotFoundException ex) {
-      throw new MojoExecutionException("Cannot set unittest runner working directory", ex);
+      throw new MojoExecutionException("Cannot set [unittest] runner working directory", ex);
     }
+
+    // Set [USE_XP] environment variable
+    runner.setEnvironmentVariable("USE_XP", this.bootstrapClasspath);
 
     // Execute runner
     try {
       runner.execute();
     } catch (RunnerException ex) {
-      throw new MojoExecutionException("Execution of unittest runner failed", ex);
+      throw new MojoExecutionException("Execution of [unittest] runner failed", ex);
     }
 
     getLog().info(LINE_SEPARATOR);

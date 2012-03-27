@@ -15,7 +15,7 @@
 
   <fileSets>
     <fileSet filtered="true" packaged="false" encoding="UTF-8" >
-      <directory></directory>
+      <directory/>
       <includes>
         <include>README</include>
         <include>ChangeLog</include>
