@@ -123,11 +123,13 @@ public class IniProperties {
             state= ParseState.ESCAPE;
             break;
 
-          // Comment
+          // Comment - only at the beginning of a line
           case '#':
           case ';':
-            state= ParseState.COMMENT;
-            break;
+        if (null == key && 0 == sb.length()) {
+        state= ParseState.COMMENT;
+        break;
+      }
 
           // Assignment operator
           case '=':
