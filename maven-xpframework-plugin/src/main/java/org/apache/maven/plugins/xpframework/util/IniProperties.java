@@ -126,10 +126,10 @@ public class IniProperties {
           // Comment - only at the beginning of a line
           case '#':
           case ';':
-        if (null == key && 0 == sb.length()) {
-        state= ParseState.COMMENT;
-        break;
-      }
+            if (null == key && 0 == sb.length()) {
+              state= ParseState.COMMENT;
+              break;
+            }
 
           // Assignment operator
           case '=':
